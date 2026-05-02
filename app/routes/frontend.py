@@ -2,6 +2,9 @@
 Z-Core Frontend Routes
 ======================
 Public-facing pages: homepage, blog, products, cart, checkout, pages.
+
+ROUTE ORDER MATTERS — FastAPI matches first registered route first.
+Catch-all `/{slug}` MUST be the LAST route registered.
 """
 
 import json
@@ -28,11 +31,15 @@ def get_front_template(name: str):
     return templates.get_template(f"front/{name}")
 
 
+# ══════════════════════════════════════════════════════════════════════
+# ROUTES MUST BE ORDERED: specific paths → parameterized paths → catch-all
+# ══════════════════════════════════════════════════════════════════════
+
+
 # ── Homepage ───────────────────────────────────────────────────────────
 
 @router.get("/", response_class=HTMLResponse)
 async def homepage(request: Request, db: DBSession = Depends(get_db)):
-    # Check if a page is set as homepage
     home_page = db.query(Page).filter(Page.is_homepage == True, Page.status == PostStatus.PUBLISHED).first()
     if home_page:
         meta = build_meta_tags(
@@ -44,7 +51,6 @@ async def homepage(request: Request, db: DBSession = Depends(get_db)):
         tmpl = get_front_template("page.html")
         return tmpl.render(request=request, page=home_page, meta=meta)
 
-    # Default homepage: featured products + recent posts
     featured_products = db.query(Product).filter(
         Product.is_featured == True, Product.status == ProductStatus.PUBLISHED
     ).limit(8).all()
@@ -85,11 +91,7 @@ async def blog_list(request: Request, page: int = 1, db: DBSession = Depends(get
 
     total_pages = (total + per_page - 1) // per_page
 
-    meta = build_meta_tags(
-        title="Blog",
-        site_title=settings.SITE_TITLE,
-        site_url=settings.SITE_URL,
-    )
+    meta = build_meta_tags(title="Blog", site_title=settings.SITE_TITLE, site_url=settings.SITE_URL)
 
     tmpl = get_front_template("blog.html")
     return tmpl.render(
@@ -107,7 +109,6 @@ async def blog_post(request: Request, slug: str, db: DBSession = Depends(get_db)
         tmpl = get_front_template("404.html")
         return HTMLResponse(tmpl.render(request=request), status_code=404)
 
-    # Increment view count
     post.view_count += 1
     db.commit()
 
@@ -120,7 +121,6 @@ async def blog_post(request: Request, slug: str, db: DBSession = Depends(get_db)
         site_url=settings.SITE_URL,
     )
 
-    # Related posts
     related = db.query(Post).filter(
         Post.status == PostStatus.PUBLISHED, Post.id != post.id
     ).order_by(desc(Post.published_at)).limit(3).all()
@@ -129,7 +129,7 @@ async def blog_post(request: Request, slug: str, db: DBSession = Depends(get_db)
     return tmpl.render(request=request, post=post, meta=meta, related=related)
 
 
-# ── Products ───────────────────────────────────────────────────────────
+# ── Shop & Products ────────────────────────────────────────────────────
 
 @router.get("/shop", response_class=HTMLResponse)
 async def shop_list(
@@ -149,7 +149,6 @@ async def shop_list(
         if cat:
             query = query.filter(Product.categories.contains(cat))
 
-    # Sorting
     if sort == "price_asc":
         query = query.order_by(Product.price.asc())
     elif sort == "price_desc":
@@ -199,7 +198,6 @@ async def product_detail(request: Request, slug: str, db: DBSession = Depends(ge
         site_url=settings.SITE_URL,
     )
 
-    # Gallery images
     gallery = []
     if product.gallery_images:
         try:
@@ -207,7 +205,6 @@ async def product_detail(request: Request, slug: str, db: DBSession = Depends(ge
         except json.JSONDecodeError:
             pass
 
-    # Related products
     related = db.query(Product).filter(
         Product.status == ProductStatus.PUBLISHED, Product.id != product.id
     ).order_by(desc(Product.published_at)).limit(4).all()
@@ -219,26 +216,25 @@ async def product_detail(request: Request, slug: str, db: DBSession = Depends(ge
     )
 
 
-# ── Static Pages ───────────────────────────────────────────────────────
+# ── Search ─────────────────────────────────────────────────────────────
 
-@router.get("/{slug}", response_class=HTMLResponse)
-async def static_page(request: Request, slug: str, db: DBSession = Depends(get_db)):
-    page = db.query(Page).filter(
-        Page.slug == slug, Page.status == PostStatus.PUBLISHED
-    ).first()
-    if not page:
-        tmpl = get_front_template("404.html")
-        return HTMLResponse(tmpl.render(request=request), status_code=404)
+@router.get("/search", response_class=HTMLResponse)
+async def search(request: Request, q: str = "", db: DBSession = Depends(get_db)):
+    results = {"posts": [], "products": []}
+    if q and len(q) >= 2:
+        pattern = f"%{q}%"
+        results["posts"] = db.query(Post).filter(
+            Post.status == PostStatus.PUBLISHED,
+            (Post.title.like(pattern)) | (Post.content.like(pattern))
+        ).limit(10).all()
+        results["products"] = db.query(Product).filter(
+            Product.status == ProductStatus.PUBLISHED,
+            (Product.name.like(pattern)) | (Product.description.like(pattern))
+        ).limit(10).all()
 
-    meta = build_meta_tags(
-        title=page.meta_title or page.title,
-        description=page.meta_description,
-        site_title=settings.SITE_TITLE,
-        site_url=settings.SITE_URL,
-    )
-
-    tmpl = get_front_template("page.html")
-    return tmpl.render(request=request, page=page, meta=meta)
+    meta = build_meta_tags(title=f"Tìm kiếm: {q}", site_title=settings.SITE_TITLE, site_url=settings.SITE_URL)
+    tmpl = get_front_template("search.html")
+    return tmpl.render(request=request, meta=meta, query=q, results=results)
 
 
 # ── Cart & Checkout ────────────────────────────────────────────────────
@@ -272,7 +268,6 @@ async def checkout_submit(
     cart_data: str = Form("[]"),
     db: DBSession = Depends(get_db)
 ):
-    """Process checkout form submission."""
     import uuid
 
     try:
@@ -283,10 +278,8 @@ async def checkout_submit(
     if not cart_items:
         return RedirectResponse(url="/cart?error=empty", status_code=302)
 
-    # Generate order number
     order_number = f"ZC-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
 
-    # Calculate totals
     subtotal = 0
     order_items = []
     for item in cart_items:
@@ -313,7 +306,7 @@ async def checkout_submit(
             subtotal=item_subtotal,
         ))
 
-    total = subtotal  # Add shipping fee logic here if needed
+    total = subtotal
 
     order = Order(
         order_number=order_number,
@@ -334,15 +327,13 @@ async def checkout_submit(
     db.add(order)
     db.commit()
 
-    # Send notifications
     from app.services.notification import notify_new_order
     import asyncio
     try:
         asyncio.create_task(notify_new_order(order, db))
     except Exception:
-        pass  # Don't fail checkout on notification error
+        pass
 
-    # Update stock
     for oi in order_items:
         if oi.product_id:
             p = db.query(Product).get(oi.product_id)
@@ -362,22 +353,65 @@ async def order_success(request: Request, order: str = ""):
     return tmpl.render(request=request, meta=meta, order_number=order)
 
 
-# ── Search ─────────────────────────────────────────────────────────────
+# ── SEO Endpoints (must be before catch-all) ──────────────────────────
 
-@router.get("/search", response_class=HTMLResponse)
-async def search(request: Request, q: str = "", db: DBSession = Depends(get_db)):
-    results = {"posts": [], "products": []}
-    if q and len(q) >= 2:
-        pattern = f"%{q}%"
-        results["posts"] = db.query(Post).filter(
-            Post.status == PostStatus.PUBLISHED,
-            (Post.title.like(pattern)) | (Post.content.like(pattern))
-        ).limit(10).all()
-        results["products"] = db.query(Product).filter(
-            Product.status == ProductStatus.PUBLISHED,
-            (Product.name.like(pattern)) | (Product.description.like(pattern))
-        ).limit(10).all()
+@router.get("/robots.txt", response_class=HTMLResponse)
+async def robots_txt(request: Request):
+    from app.utils.seo import generate_robots_txt
+    from fastapi.responses import Response
+    content = generate_robots_txt(settings.SITE_URL)
+    return Response(content, media_type="text/plain")
 
-    meta = build_meta_tags(title=f"Tìm kiếm: {q}", site_title=settings.SITE_TITLE, site_url=settings.SITE_URL)
-    tmpl = get_front_template("search.html")
-    return tmpl.render(request=request, meta=meta, query=q, results=results)
+
+@router.get("/sitemap.xml", response_class=HTMLResponse)
+async def sitemap_xml(request: Request):
+    from app.utils.seo import generate_sitemap
+    from fastapi.responses import Response
+    db = get_session_from_request(request)
+    try:
+        pages = [
+            {"slug": p.slug, "updated_at": p.updated_at.strftime("%Y-%m-%d") if p.updated_at else ""}
+            for p in db.query(Page).filter(Page.status == PostStatus.PUBLISHED).all()
+        ]
+        posts = [
+            {"slug": p.slug, "published_at": p.published_at, "created_at": p.created_at}
+            for p in db.query(Post).filter(Post.status == PostStatus.PUBLISHED).all()
+        ]
+        products = [
+            {"slug": p.slug, "updated_at": p.updated_at, "created_at": p.created_at}
+            for p in db.query(Product).filter(Product.status == ProductStatus.PUBLISHED).all()
+        ]
+        content = generate_sitemap(pages, posts, products, settings.SITE_URL)
+        return Response(content, media_type="application/xml")
+    finally:
+        db.close()
+
+
+def get_session_from_request(request):
+    from app.models.database import get_session
+    return get_session()
+
+
+# ══════════════════════════════════════════════════════════════════════
+# CATCH-ALL — MUST BE LAST
+# Catches /{slug} for static pages (gioi-thieu, lien-he, etc.)
+# ══════════════════════════════════════════════════════════════════════
+
+@router.get("/{slug}", response_class=HTMLResponse)
+async def static_page(request: Request, slug: str, db: DBSession = Depends(get_db)):
+    page = db.query(Page).filter(
+        Page.slug == slug, Page.status == PostStatus.PUBLISHED
+    ).first()
+    if not page:
+        tmpl = get_front_template("404.html")
+        return HTMLResponse(tmpl.render(request=request), status_code=404)
+
+    meta = build_meta_tags(
+        title=page.meta_title or page.title,
+        description=page.meta_description,
+        site_title=settings.SITE_TITLE,
+        site_url=settings.SITE_URL,
+    )
+
+    tmpl = get_front_template("page.html")
+    return tmpl.render(request=request, page=page, meta=meta)

@@ -20,6 +20,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from config import settings
 from app.models.database import init_db
 from app.middleware.admin_auth import AdminAuthMiddleware
+from app.middleware.security_headers import SecurityHeadersMiddleware
 from app.core.templates import get_template_env
 
 # ── Logging ────────────────────────────────────────────────────────────
@@ -41,6 +42,7 @@ app = FastAPI(
 
 # Middleware
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(AdminAuthMiddleware)
 
 # Static files
@@ -69,38 +71,7 @@ app.include_router(admin_router, prefix=settings.ADMIN_PREFIX)
 app.include_router(api_router, prefix="/api")
 app.include_router(frontend_router)  # Catch-all last
 
-# ── SEO Endpoints ──────────────────────────────────────────────────────
-
-@app.get("/robots.txt", response_class=Response)
-async def robots_txt():
-    from app.utils.seo import generate_robots_txt
-    content = generate_robots_txt(settings.SITE_URL)
-    return Response(content, media_type="text/plain")
-
-
-@app.get("/sitemap.xml", response_class=Response)
-async def sitemap_xml():
-    from app.utils.seo import generate_sitemap
-    from app.models.database import get_session, Post, Page, Product, PostStatus
-
-    db = get_session()
-    try:
-        pages = [
-            {"slug": p.slug, "updated_at": p.updated_at.strftime("%Y-%m-%d") if p.updated_at else ""}
-            for p in db.query(Page).filter(Page.status == PostStatus.PUBLISHED).all()
-        ]
-        posts = [
-            {"slug": p.slug, "published_at": p.published_at, "created_at": p.created_at}
-            for p in db.query(Post).filter(Post.status == PostStatus.PUBLISHED).all()
-        ]
-        products = [
-            {"slug": p.slug, "updated_at": p.updated_at, "created_at": p.created_at}
-            for p in db.query(Product).filter(Product.status == "published").all()
-        ]
-        content = generate_sitemap(pages, posts, products, settings.SITE_URL)
-        return Response(content, media_type="application/xml")
-    finally:
-        db.close()
+# SEO endpoints are in frontend router (before catch-all)
 
 # ── Run ────────────────────────────────────────────────────────────────
 
