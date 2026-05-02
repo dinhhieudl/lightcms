@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  zcore:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: zcore
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - zcore-data:/app/data
+      - ./uploads:/app/app/static/uploads
+    env_file:
+      - ../.env
+    environment:
+      - ZCORE_DB_PATH=/app/data/zcore.db
+
+volumes:
+  zcore-data:

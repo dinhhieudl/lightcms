@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="{{ site_language }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ meta.title if meta and meta.title else site_title }}</title>
+    {% if meta %}
+    {% for key, value in meta.items() %}
+    {% if key == 'canonical' %}
+    <link rel="canonical" href="{{ value }}">
+    {% elif key.startswith('og:') %}
+    <meta property="{{ key }}" content="{{ value }}">
+    {% elif key.startswith('twitter:') %}
+    <meta name="{{ key }}" content="{{ value }}">
+    {% elif key in ('title',) %}{# skip — already in <title> #}
+    {% else %}
+    <meta name="{{ key }}" content="{{ value }}">
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-white text-gray-900 antialiased">
+    {% block body %}{% endblock %}
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

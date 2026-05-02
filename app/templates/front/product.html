@@ -1,0 +1,207 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+{% include "components/header.html" %}
+
+<main class="max-w-6xl mx-auto px-4 py-8">
+    {# Breadcrumb #}
+    <nav class="text-sm text-gray-500 mb-6">
+        <a href="/" class="hover:text-blue-600">Trang chủ</a>
+        <span class="mx-2">/</span>
+        <a href="/shop" class="hover:text-blue-600">Sản phẩm</a>
+        <span class="mx-2">/</span>
+        <span class="text-gray-900">{{ product.name }}</span>
+    </nav>
+
+    <div class="grid md:grid-cols-2 gap-10">
+        {# Images #}
+        <div>
+            <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4" id="main-image">
+                {% if product.featured_image %}
+                <img src="{{ product.featured_image }}" alt="{{ product.name }}"
+                     class="w-full h-full object-contain" id="product-main-img">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-gray-400">No image</div>
+                {% endif %}
+            </div>
+            {% if gallery %}
+            <div class="grid grid-cols-4 gap-2">
+                <div class="aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer border-2 border-blue-500 thumbnail-img"
+                     onclick="document.getElementById('product-main-img').src='{{ product.featured_image }}'">
+                    <img src="{{ product.featured_image }}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                {% for img in gallery %}
+                <div class="aspect-square bg-gray-100 rounded overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 thumbnail-img"
+                     onclick="document.getElementById('product-main-img').src='{{ img }}'">
+                    <img src="{{ img }}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        {# Info #}
+        <div>
+            <h1 class="text-3xl font-bold mb-2">{{ product.name }}</h1>
+
+            {% if product.sku %}
+            <p class="text-sm text-gray-500 mb-4">SKU: {{ product.sku }}</p>
+            {% endif %}
+
+            <div class="mb-6">
+                {% if product.sale_price %}
+                <span class="text-3xl font-bold text-red-600">{{ product.sale_price|format_price }}</span>
+                <span class="text-xl text-gray-400 line-through ml-3">{{ product.price|format_price }}</span>
+                {% set discount = ((product.price - product.sale_price) / product.price * 100)|int %}
+                <span class="bg-red-100 text-red-600 text-sm px-2 py-0.5 rounded ml-2">-{{ discount }}%</span>
+                {% else %}
+                <span class="text-3xl font-bold text-red-600">{{ product.price|format_price }}</span>
+                {% endif %}
+            </div>
+
+            {% if product.short_description %}
+            <div class="prose prose-sm mb-6 text-gray-600">{{ product.short_description|markdown|safe }}</div>
+            {% endif %}
+
+            {# Attributes (for variable products) #}
+            {% if product.attributes %}
+            {% for attr in product.attributes %}
+            {% if attr.is_variation %}
+            <div class="mb-4">
+                <label class="font-medium text-sm mb-2 block">{{ attr.name }}:</label>
+                <div class="flex flex-wrap gap-2">
+                    {% for val in attr.values %}
+                    <button class="px-4 py-2 border rounded-lg text-sm hover:border-blue-500 hover:text-blue-600 attr-btn"
+                            data-attr="{{ attr.name }}" data-value="{{ val }}"
+                            onclick="selectAttribute('{{ attr.name }}', '{{ val }}')">
+                        {{ val }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+
+            {# Variants (hidden, selected by attributes) #}
+            {% if product.variants %}
+            <select id="variant-select" class="hidden">
+                {% for v in product.variants %}
+                <option value="{{ v.id }}" data-price="{{ v.price or product.price }}"
+                        data-stock="{{ v.stock_status }}"
+                        data-attrs='{{ v.attribute_values|map(attribute="attribute_value")|list|tojson }}'>
+                    {{ v.name }} — {{ (v.price or product.price)|format_price }}
+                </option>
+                {% endfor %}
+            </select>
+            {% endif %}
+
+            {# Quantity + Add to Cart #}
+            <div class="flex items-center gap-4 mb-6 mt-6">
+                <div class="flex items-center border rounded-lg">
+                    <button onclick="changeQty(-1)" class="px-3 py-2 hover:bg-gray-50">−</button>
+                    <input type="number" id="qty" value="1" min="1" class="w-16 text-center border-x py-2 focus:outline-none">
+                    <button onclick="changeQty(1)" class="px-3 py-2 hover:bg-gray-50">+</button>
+                </div>
+                {% if product.stock_status == 'instock' %}
+                <button onclick="addToCart({{ product.id }}, '{{ product.name }}', '{{ product.featured_image }}')"
+                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    🛒 Thêm vào giỏ
+                </button>
+                {% else %}
+                <button disabled class="flex-1 bg-gray-300 text-gray-500 py-3 rounded-lg font-semibold cursor-not-allowed">
+                    Hết hàng
+                </button>
+                {% endif %}
+            </div>
+
+            {# Description #}
+            {% if product.description %}
+            <div class="border-t pt-6 mt-6">
+                <h2 class="font-bold text-lg mb-4">Mô tả sản phẩm</h2>
+                <div class="prose max-w-none">{{ product.description|markdown|safe }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Related Products #}
+    {% if related %}
+    <section class="mt-16">
+        <h2 class="text-2xl font-bold mb-8">Sản phẩm liên quan</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {% for p in related %}
+            <a href="/product/{{ p.slug }}" class="group">
+                <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
+                    {% if p.featured_image %}
+                    <img src="{{ p.featured_image }}" alt="{{ p.name }}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                         loading="lazy">
+                    {% endif %}
+                </div>
+                <h3 class="font-medium text-sm group-hover:text-blue-600 transition">{{ p.name }}</h3>
+                <p class="text-red-600 font-bold mt-1">
+                    {% if p.sale_price %}{{ p.sale_price|format_price }}{% else %}{{ p.price|format_price }}{% endif %}
+                </p>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</main>
+
+{% include "components/footer.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function changeQty(delta) {
+    const el = document.getElementById('qty');
+    el.value = Math.max(1, parseInt(el.value) + delta);
+}
+
+function addToCart(productId, name, image) {
+    const qty = parseInt(document.getElementById('qty').value);
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+    // Check for variant selection
+    const variantSelect = document.getElementById('variant-select');
+    let variantId = null;
+    let variantName = '';
+    if (variantSelect && variantSelect.value) {
+        const opt = variantSelect.selectedOptions[0];
+        variantId = parseInt(variantSelect.value);
+        variantName = opt.textContent.split(' — ')[0];
+    }
+
+    const existing = cart.find(i => i.product_id === productId && i.variant_id === variantId);
+    if (existing) {
+        existing.quantity += qty;
+    } else {
+        cart.push({product_id: productId, variant_id: variantId, name, variant_name: variantName, image, quantity: qty});
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+
+    // Toast notification
+    showToast(`Đã thêm "${name}" vào giỏ hàng`);
+}
+
+function selectAttribute(name, value) {
+    // Highlight selected button
+    document.querySelectorAll(`[data-attr="${name}"]`).forEach(btn => {
+        btn.classList.toggle('border-blue-500', btn.dataset.value === value);
+        btn.classList.toggle('bg-blue-50', btn.dataset.value === value);
+    });
+}
+
+function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2500);
+}
+</script>
+{% endblock %}

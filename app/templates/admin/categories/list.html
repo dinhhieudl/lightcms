@@ -1,0 +1,48 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block admin_content %}
+<h1 class="text-2xl font-bold mb-6">Danh mục</h1>
+
+<div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-white rounded-lg border">
+        <div class="p-4 border-b font-semibold">Danh sách</div>
+        <div class="divide-y">
+            {% for cat in categories %}
+            <div class="flex justify-between items-center px-4 py-3 hover:bg-gray-50">
+                <div>
+                    <span class="font-medium">{{ cat.name }}</span>
+                    <span class="text-xs text-gray-400 ml-2">/{{ cat.slug }}</span>
+                </div>
+                <a href="{{ admin_prefix }}/categories/{{ cat.id }}/delete" class="text-red-500 text-sm hover:underline" onclick="return confirm('Xóa?')">Xóa</a>
+            </div>
+            {% else %}
+            <p class="p-4 text-gray-400 text-sm">Chưa có danh mục</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <form method="POST" action="{{ admin_prefix }}/categories/new" class="bg-white rounded-lg border p-4">
+        <h3 class="font-semibold mb-4">+ Thêm danh mục</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Tên</label>
+                <input type="text" name="name" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Danh mục cha</label>
+                <select name="parent_id" class="w-full border rounded px-3 py-2">
+                    <option value="">— Không —</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Mô tả</label>
+                <textarea name="description" rows="3" class="w-full border rounded px-3 py-2 text-sm"></textarea>
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Tạo danh mục</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+<header class="bg-white border-b sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="/" class="text-xl font-bold text-gray-900">{{ site_title }}</a>
+
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+            <a href="/shop" class="text-gray-600 hover:text-blue-600 transition">Sản phẩm</a>
+            <a href="/blog" class="text-gray-600 hover:text-blue-600 transition">Blog</a>
+            <a href="/about" class="text-gray-600 hover:text-blue-600 transition">Giới thiệu</a>
+            <a href="/contact" class="text-gray-600 hover:text-blue-600 transition">Liên hệ</a>
+        </nav>
+
+        <div class="flex items-center gap-4">
+            {# Search #}
+            <form action="/search" method="GET" class="hidden md:flex items-center">
+                <input type="text" name="q" placeholder="Tìm kiếm..."
+                       class="border rounded-l-lg px-3 py-1.5 text-sm w-40 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <button type="submit" class="bg-gray-100 border border-l-0 rounded-r-lg px-3 py-1.5 text-sm hover:bg-gray-200">🔍</button>
+            </form>
+
+            {# Cart #}
+            <a href="/cart" class="relative text-gray-600 hover:text-blue-600 transition">
+                🛒
+                <span id="cart-count"
+                      class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+            </a>
+
+            {# Mobile menu #}
+            <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="md:hidden">
+                ☰
+            </button>
+        </div>
+    </div>
+
+    {# Mobile menu #}
+    <div id="mobile-menu" class="hidden md:hidden border-t bg-white">
+        <nav class="flex flex-col p-4 gap-3">
+            <form action="/search" method="GET" class="flex items-center mb-2">
+                <input type="text" name="q" placeholder="Tìm kiếm..."
+                       class="border rounded-l-lg px-3 py-2 text-sm flex-1 focus:outline-none">
+                <button type="submit" class="bg-gray-100 border border-l-0 rounded-r-lg px-3 py-2 text-sm">🔍</button>
+            </form>
+            <a href="/shop" class="text-gray-600 hover:text-blue-600 py-2">Sản phẩm</a>
+            <a href="/blog" class="text-gray-600 hover:text-blue-600 py-2">Blog</a>
+            <a href="/about" class="text-gray-600 hover:text-blue-600 py-2">Giới thiệu</a>
+            <a href="/contact" class="text-gray-600 hover:text-blue-600 py-2">Liên hệ</a>
+        </nav>
+    </div>
+</header>

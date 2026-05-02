@@ -1,0 +1,91 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block admin_content %}
+<h1 class="text-2xl font-bold mb-6">{% if product %}Chỉnh sửa sản phẩm{% else %}Thêm sản phẩm mới{% endif %}</h1>
+
+<form method="POST" enctype="multipart/form-data"
+      action="{% if product %}{{ admin_prefix }}/products/{{ product.id }}/edit{% else %}{{ admin_prefix }}/products/new{% endif %}"
+      class="grid md:grid-cols-3 gap-6">
+    <div class="md:col-span-2 space-y-4">
+        <input type="text" name="name" value="{{ product.name if product else '' }}" required placeholder="Tên sản phẩm"
+               class="w-full text-2xl font-bold border-0 border-b-2 border-gray-200 focus:border-blue-500 focus:outline-none py-2">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">SKU</label>
+                <input type="text" name="sku" value="{{ product.sku if product else '' }}" class="w-full border rounded px-3 py-2 text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Loại sản phẩm</label>
+                <select name="product_type" class="w-full border rounded px-3 py-2 text-sm">
+                    <option value="simple" {% if product and product.product_type == 'simple' %}selected{% endif %}>Đơn giản</option>
+                    <option value="variable" {% if product and product.product_type == 'variable' %}selected{% endif %}>Có biến thể</option>
+                    <option value="digital" {% if product and product.product_type == 'digital' %}selected{% endif %}>Số hóa</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Mô tả (Markdown)</label>
+            <textarea name="description" rows="12" class="w-full border rounded-lg px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">{{ product.description if product else '' }}</textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Mô tả ngắn</label>
+            <textarea name="short_description" rows="3" class="w-full border rounded px-3 py-2 text-sm">{{ product.short_description if product else '' }}</textarea>
+        </div>
+    </div>
+    <div class="space-y-4">
+        <div class="bg-white rounded-lg border p-4">
+            <h3 class="font-medium mb-3">💰 Giá</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Giá gốc</label>
+                    <input type="number" name="price" value="{{ product.price if product else '0' }}" step="1000" class="w-full border rounded px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Giá khuyến mãi</label>
+                    <input type="number" name="sale_price" value="{{ product.sale_price if product and product.sale_price else '' }}" step="1000" class="w-full border rounded px-3 py-2 text-sm">
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg border p-4">
+            <h3 class="font-medium mb-3">📦 Kho</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Số lượng</label>
+                    <input type="number" name="stock_quantity" value="{{ product.stock_quantity if product else '0' }}" class="w-full border rounded px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Trạng thái kho</label>
+                    <select name="stock_status" class="w-full border rounded px-3 py-2 text-sm">
+                        <option value="instock" {% if product and product.stock_status == 'instock' %}selected{% endif %}>Còn hàng</option>
+                        <option value="outofstock" {% if product and product.stock_status == 'outofstock' %}selected{% endif %}>Hết hàng</option>
+                        <option value="onbackorder" {% if product and product.stock_status == 'onbackorder' %}selected{% endif %}>Đặt trước</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg border p-4">
+            <label class="block text-sm font-medium mb-1">Ảnh đại diện</label>
+            <input type="file" name="featured_image" accept="image/*" class="w-full text-sm">
+            {% if product and product.featured_image %}
+            <img src="{{ product.featured_image }}" class="mt-2 w-full rounded">
+            {% endif %}
+        </div>
+        <div class="bg-white rounded-lg border p-4">
+            <label class="block text-sm font-medium mb-1">Danh mục</label>
+            <select name="category_ids" multiple class="w-full border rounded px-3 py-2 text-sm h-32">
+                {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if product and cat in product.categories %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="bg-white rounded-lg border p-4">
+            <label class="block text-sm font-medium mb-1">Trạng thái</label>
+            <select name="status" class="w-full border rounded px-3 py-2">
+                <option value="draft" {% if product and product.status.value == 'draft' %}selected{% endif %}>Nháp</option>
+                <option value="published" {% if product and product.status.value == 'published' %}selected{% endif %}>Đăng</option>
+            </select>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700">{% if product %}Cập nhật{% else %}Tạo sản phẩm{% endif %}</button>
+    </div>
+</form>
+{% endblock %}

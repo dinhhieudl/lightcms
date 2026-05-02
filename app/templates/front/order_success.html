@@ -1,0 +1,26 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+{% include "components/header.html" %}
+
+<main class="max-w-2xl mx-auto px-4 py-16 text-center">
+    <div class="text-6xl mb-6">✅</div>
+    <h1 class="text-3xl font-bold mb-4">Đặt hàng thành công!</h1>
+    <p class="text-gray-600 mb-2">Cảm ơn bạn đã đặt hàng.</p>
+    {% if order_number %}
+    <p class="text-lg font-mono bg-gray-100 inline-block px-4 py-2 rounded mb-6">Mã đơn: {{ order_number }}</p>
+    {% endif %}
+    <p class="text-gray-500 mb-8">Chúng tôi sẽ liên hệ với bạn để xác nhận đơn hàng.</p>
+    <a href="/shop" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+        Tiếp tục mua sắm →
+    </a>
+</main>
+
+<script>
+    // Clear cart after successful order
+    localStorage.removeItem('cart');
+    updateCartCount();
+</script>
+
+{% include "components/footer.html" %}
+{% endblock %}

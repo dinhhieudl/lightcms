@@ -1,0 +1,29 @@
+/* Z-Core Tailwind CSS Input */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply text-gray-900 antialiased;
+    }
+}
+
+@layer components {
+    .prose h1 { @apply text-3xl font-bold mt-8 mb-4; }
+    .prose h2 { @apply text-2xl font-bold mt-6 mb-3; }
+    .prose h3 { @apply text-xl font-semibold mt-5 mb-2; }
+    .prose p { @apply mb-4 leading-relaxed; }
+    .prose ul { @apply list-disc pl-6 mb-4; }
+    .prose ol { @apply list-decimal pl-6 mb-4; }
+    .prose li { @apply mb-1; }
+    .prose blockquote { @apply border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4; }
+    .prose code { @apply bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono; }
+    .prose pre { @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4; }
+    .prose pre code { @apply bg-transparent p-0; }
+    .prose img { @apply rounded-lg max-w-full my-4; }
+    .prose a { @apply text-blue-600 underline hover:text-blue-800; }
+    .prose table { @apply w-full border-collapse mb-4; }
+    .prose th { @apply border-b-2 border-gray-300 text-left p-2; }
+    .prose td { @apply border-b border-gray-200 p-2; }
+}

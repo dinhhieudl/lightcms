@@ -1,0 +1,53 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Đơn hàng</h1>
+    <div class="flex gap-2">
+        <a href="{{ admin_prefix }}/orders" class="px-3 py-1.5 text-sm rounded {% if not current_status %}bg-blue-600 text-white{% else %}bg-white border{% endif %}">Tất cả</a>
+        {% for s in ['pending','confirmed','processing','shipped','completed','cancelled'] %}
+        <a href="{{ admin_prefix }}/orders?status={{ s }}" class="px-3 py-1.5 text-sm rounded {% if current_status == s %}bg-blue-600 text-white{% else %}bg-white border{% endif %}">{{ s }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="bg-white rounded-lg border overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-left">
+            <tr>
+                <th class="px-4 py-3">Mã đơn</th>
+                <th class="px-4 py-3">Khách hàng</th>
+                <th class="px-4 py-3 w-28">Tổng tiền</th>
+                <th class="px-4 py-3 w-24">Trạng thái</th>
+                <th class="px-4 py-3 w-28">Ngày tạo</th>
+                <th class="px-4 py-3 w-16">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y">
+            {% for order in orders %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3"><a href="{{ admin_prefix }}/orders/{{ order.id }}" class="font-mono font-medium hover:text-blue-600">#{{ order.order_number }}</a></td>
+                <td class="px-4 py-3">
+                    <div>{{ order.customer_name }}</div>
+                    <div class="text-xs text-gray-400">{{ order.customer_phone }}</div>
+                </td>
+                <td class="px-4 py-3 font-medium">{{ order.total|format_price }}</td>
+                <td class="px-4 py-3">
+                    <span class="text-xs px-2 py-1 rounded-full
+                        {% if order.status.value == 'pending' %}bg-yellow-100 text-yellow-700
+                        {% elif order.status.value == 'completed' %}bg-green-100 text-green-700
+                        {% elif order.status.value == 'cancelled' %}bg-red-100 text-red-700
+                        {% else %}bg-blue-100 text-blue-700{% endif %}">
+                        {{ order.status.value }}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-gray-500">{{ order.created_at|timeago }}</td>
+                <td class="px-4 py-3"><a href="{{ admin_prefix }}/orders/{{ order.id }}" class="text-blue-600 hover:underline">Chi tiết</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">Chưa có đơn hàng</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

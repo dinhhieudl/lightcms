@@ -1,0 +1,111 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+{% include "components/header.html" %}
+
+<main>
+    {# Hero Section #}
+    <section class="bg-gradient-to-r from-gray-900 to-gray-700 text-white py-20 px-4">
+        <div class="max-w-6xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">{{ site_title }}</h1>
+            <p class="text-xl text-gray-300 mb-8">{{ site_description }}</p>
+            <a href="/shop" class="inline-block bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                Mua sắm ngay →
+            </a>
+        </div>
+    </section>
+
+    {# Featured Products #}
+    {% if featured_products %}
+    <section class="py-16 px-4">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12">Sản phẩm nổi bật</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {% for product in featured_products %}
+                <a href="/product/{{ product.slug }}" class="group">
+                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
+                        {% if product.featured_image %}
+                        <img src="{{ product.featured_image }}" alt="{{ product.name }}"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                             loading="lazy">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-400">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h3 class="font-medium text-sm group-hover:text-blue-600 transition">{{ product.name }}</h3>
+                    <p class="text-red-600 font-bold mt-1">
+                        {% if product.sale_price %}
+                        <span class="line-through text-gray-400 text-sm mr-1">{{ product.price|format_price }}</span>
+                        {{ product.sale_price|format_price }}
+                        {% else %}
+                        {{ product.price|format_price }}
+                        {% endif %}
+                    </p>
+                </a>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-8">
+                <a href="/shop" class="text-blue-600 hover:underline font-medium">Xem tất cả sản phẩm →</a>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {# Categories #}
+    {% if categories %}
+    <section class="py-16 px-4 bg-gray-50">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12">Danh mục</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {% for cat in categories %}
+                <a href="/shop?category={{ cat.slug }}"
+                   class="bg-white rounded-lg p-6 text-center hover:shadow-lg transition-shadow">
+                    {% if cat.image_url %}
+                    <img src="{{ cat.image_url }}" alt="{{ cat.name }}" class="w-16 h-16 mx-auto mb-3 object-contain">
+                    {% endif %}
+                    <h3 class="font-semibold">{{ cat.name }}</h3>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    {# Recent Posts #}
+    {% if recent_posts %}
+    <section class="py-16 px-4">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12">Bài viết mới</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                {% for post in recent_posts %}
+                <a href="/blog/{{ post.slug }}" class="group">
+                    {% if post.featured_image %}
+                    <div class="aspect-video bg-gray-100 rounded-lg overflow-hidden mb-4">
+                        <img src="{{ post.featured_image }}" alt="{{ post.title }}"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                             loading="lazy">
+                    </div>
+                    {% endif %}
+                    <h3 class="font-semibold text-lg group-hover:text-blue-600 transition">{{ post.title }}</h3>
+                    {% if post.excerpt %}
+                    <p class="text-gray-600 text-sm mt-2">{{ post.excerpt|truncate_html(120) }}</p>
+                    {% endif %}
+                    <p class="text-gray-400 text-xs mt-2">{{ post.published_at|timeago }}</p>
+                </a>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-8">
+                <a href="/blog" class="text-blue-600 hover:underline font-medium">Xem tất cả bài viết →</a>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+</main>
+
+{% include "components/footer.html" %}
+{% endblock %}

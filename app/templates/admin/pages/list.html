@@ -1,0 +1,36 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Trang</h1>
+    <a href="{{ admin_prefix }}/pages/new" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ Tạo trang mới</a>
+</div>
+
+<div class="bg-white rounded-lg border overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-left">
+            <tr>
+                <th class="px-4 py-3">Tiêu đề</th>
+                <th class="px-4 py-3 w-24">Trạng thái</th>
+                <th class="px-4 py-3 w-24">Template</th>
+                <th class="px-4 py-3 w-24">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y">
+            {% for page in pages %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3"><a href="{{ admin_prefix }}/pages/{{ page.id }}/edit" class="font-medium hover:text-blue-600">{{ page.title }}</a></td>
+                <td class="px-4 py-3"><span class="text-xs px-2 py-1 rounded-full {% if page.status.value == 'published' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ page.status.value }}</span></td>
+                <td class="px-4 py-3 text-gray-500 text-xs">{{ page.template }}</td>
+                <td class="px-4 py-3">
+                    <a href="{{ admin_prefix }}/pages/{{ page.id }}/edit" class="text-blue-600 hover:underline mr-2">Sửa</a>
+                    <a href="{{ admin_prefix }}/pages/{{ page.id }}/delete" class="text-red-600 hover:underline" onclick="return confirm('Xóa?')">Xóa</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">Chưa có trang nào</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

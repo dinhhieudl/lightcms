@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+
+# Database
+data/
+*.db
+*.db-journal
+*.db-wal
+
+# Environment
+.env
+.gh_token
+
+# Uploads
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker/uploads/
+
+# Backups
+backups/
+
+# Node (Tailwind build only)
+node_modules/
+package-lock.json

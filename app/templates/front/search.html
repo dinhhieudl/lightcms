@@ -1,0 +1,58 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+{% include "components/header.html" %}
+
+<main class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-2">Tìm kiếm</h1>
+    <form method="GET" action="/search" class="mb-8">
+        <div class="flex gap-2">
+            <input type="text" name="q" value="{{ query }}" placeholder="Tìm kiếm sản phẩm, bài viết..."
+                   class="flex-1 border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700">Tìm</button>
+        </div>
+    </form>
+
+    {% if query %}
+    {% set total = results.products|length + results.posts|length %}
+    <p class="text-gray-500 mb-6">Tìm thấy {{ total }} kết quả cho "{{ query }}"</p>
+
+    {% if results.products %}
+    <h2 class="text-xl font-semibold mb-4">Sản phẩm</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {% for p in results.products %}
+        <a href="/product/{{ p.slug }}" class="group">
+            <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-2">
+                {% if p.featured_image %}
+                <img src="{{ p.featured_image }}" alt="{{ p.name }}" class="w-full h-full object-cover" loading="lazy">
+                {% endif %}
+            </div>
+            <h3 class="font-medium text-sm group-hover:text-blue-600">{{ p.name }}</h3>
+            <p class="text-red-600 font-bold text-sm">{{ p.price|format_price }}</p>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if results.posts %}
+    <h2 class="text-xl font-semibold mb-4">Bài viết</h2>
+    <div class="space-y-4">
+        {% for p in results.posts %}
+        <a href="/blog/{{ p.slug }}" class="block group">
+            <h3 class="font-medium group-hover:text-blue-600">{{ p.title }}</h3>
+            {% if p.excerpt %}
+            <p class="text-sm text-gray-500 mt-1">{{ p.excerpt|truncate_html(120) }}</p>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if total == 0 %}
+    <p class="text-gray-500 text-center py-12">Không tìm thấy kết quả nào.</p>
+    {% endif %}
+    {% endif %}
+</main>
+
+{% include "components/footer.html" %}
+{% endblock %}

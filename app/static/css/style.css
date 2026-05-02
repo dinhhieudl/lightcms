@@ -1,0 +1,14 @@
+/* Z-Core — Pre-built Tailwind CSS (CDN fallback for dev without Node.js) */
+/* In production, replace this with output from: tailwindcss -i input.css -o style.css --minify */
+
+/* For development, load Tailwind from CDN in base.html instead */
+/* This file exists as a placeholder — real styles come from Tailwind CLI or CDN */
+
+/* Minimal base styles that work without Tailwind */
+*, *::before, *::after { box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, sans-serif; margin: 0; line-height: 1.6; }
+img { max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+
+/* Admin sidebar */
+aside nav a.active { background: rgba(255,255,255,0.1); }

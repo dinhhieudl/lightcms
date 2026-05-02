@@ -1,0 +1,135 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+{% include "components/header.html" %}
+
+<main class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">📦 Đặt hàng</h1>
+
+    <div class="grid md:grid-cols-5 gap-8">
+        {# Checkout Form #}
+        <form method="POST" action="/checkout" class="md:col-span-3 space-y-6" id="checkout-form">
+            <input type="hidden" name="cart_data" id="cart-data-input">
+
+            <div>
+                <h2 class="text-lg font-semibold mb-4">Thông tin giao hàng</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Họ và tên *</label>
+                        <input type="text" name="customer_name" required
+                               class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Email *</label>
+                            <input type="email" name="customer_email" required
+                                   class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Điện thoại *</label>
+                            <input type="tel" name="customer_phone" required
+                                   class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Địa chỉ *</label>
+                        <input type="text" name="shipping_address" required
+                               class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                               placeholder="Số nhà, đường...">
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Tỉnh/Thành</label>
+                            <input type="text" name="shipping_city"
+                                   class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Quận/Huyện</label>
+                            <input type="text" name="shipping_district"
+                                   class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Phường/Xã</label>
+                            <input type="text" name="shipping_ward"
+                                   class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Ghi chú</label>
+                        <textarea name="shipping_note" rows="3"
+                                  class="w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                  placeholder="Ghi chú cho đơn hàng..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-semibold mb-4">Phương thức thanh toán</h2>
+                <div class="space-y-3">
+                    <label class="flex items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="payment_method" value="cod" checked class="text-blue-600">
+                        <span>💵 Thanh toán khi nhận hàng (COD)</span>
+                    </label>
+                    <label class="flex items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="payment_method" value="bank_transfer" class="text-blue-600">
+                        <span>🏦 Chuyển khoản ngân hàng</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition">
+                Đặt hàng
+            </button>
+        </form>
+
+        {# Order Summary #}
+        <aside class="md:col-span-2">
+            <div class="bg-gray-50 rounded-lg p-6 sticky top-4">
+                <h2 class="font-semibold mb-4">Đơn hàng của bạn</h2>
+                <div id="checkout-items" class="space-y-3 mb-4"></div>
+                <div class="border-t pt-4">
+                    <div class="flex justify-between font-bold text-lg">
+                        <span>Tổng:</span>
+                        <span class="text-red-600" id="checkout-total">0₫</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+{% include "components/footer.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+// Populate hidden input
+document.getElementById('cart-data-input').value = JSON.stringify(cart.map(i => ({
+    product_id: i.product_id,
+    variant_id: i.variant_id,
+    quantity: i.quantity
+})));
+
+// Render summary
+const itemsEl = document.getElementById('checkout-items');
+const totalEl = document.getElementById('checkout-total');
+let total = 0;
+
+cart.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'flex justify-between text-sm';
+    div.innerHTML = `
+        <span>${item.name} ${item.variant_name ? '(' + item.variant_name + ')' : ''} × ${item.quantity}</span>
+    `;
+    itemsEl.appendChild(div);
+});
+
+// Redirect if empty
+if (cart.length === 0) {
+    window.location.href = '/cart';
+}
+</script>
+{% endblock %}

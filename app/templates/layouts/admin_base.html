@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Z-Core</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-gray-100 text-gray-900">
+    <div class="flex min-h-screen">
+        {# Sidebar #}
+        <aside class="w-56 bg-gray-900 text-gray-300 flex-shrink-0">
+            <div class="p-4">
+                <a href="{{ admin_prefix }}/" class="text-white font-bold text-lg">⚡ Z-Core</a>
+            </div>
+            <nav class="text-sm">
+                <a href="{{ admin_prefix }}/" class="block px-4 py-2.5 hover:bg-gray-800 {% if request.url.path == admin_prefix + '/' %}bg-gray-800 text-white{% endif %}">
+                    📊 Dashboard
+                </a>
+                <a href="{{ admin_prefix }}/posts" class="block px-4 py-2.5 hover:bg-gray-800 {% if '/posts' in request.url.path %}bg-gray-800 text-white{% endif %}">
+                    📝 Bài viết
+                </a>
+                <a href="{{ admin_prefix }}/pages" class="block px-4 py-2.5 hover:bg-gray-800 {% if '/pages' in request.url.path %}bg-gray-800 text-white{% endif %}">
+                    📄 Trang
+                </a>
+                <a href="{{ admin_prefix }}/products" class="block px-4 py-2.5 hover:bg-gray-800 {% if '/products' in request.url.path %}bg-gray-800 text-white{% endif %}">
+                    🛍️ Sản phẩm
+                </a>
+                <a href="{{ admin_prefix }}/orders" class="block px-4 py-2.5 hover:bg-gray-800 {% if '/orders' in request.url.path %}bg-gray-800 text-white{% endif %}">
+                    📦 Đơn hàng
+                </a>
+                <a href="{{ admin_prefix }}/categories" class="block px-4 py-2.5 hover:bg-gray-800 {% if '/categories' in request.url.path %}bg-gray-800 text-white{% endif %}">
+                    📁 Danh mục
+                </a>
+                <a href="{{ admin_prefix }}/settings" class="block px-4 py-2.5 hover:bg-gray-800 {% if '/settings' in request.url.path %}bg-gray-800 text-white{% endif %}">
+                    ⚙️ Cài đặt
+                </a>
+                <div class="border-t border-gray-700 mt-2 pt-2">
+                    <a href="/" class="block px-4 py-2.5 hover:bg-gray-800" target="_blank">🌐 Xem website</a>
+                    <a href="{{ admin_prefix }}/logout" class="block px-4 py-2.5 hover:bg-gray-800 text-red-400">🚪 Đăng xuất</a>
+                </div>
+            </nav>
+        </aside>
+
+        {# Main Content #}
+        <main class="flex-1 p-6 overflow-auto">
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

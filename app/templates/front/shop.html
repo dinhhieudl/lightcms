@@ -1,0 +1,112 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+{% include "components/header.html" %}
+
+<main class="max-w-6xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">
+        {% if current_category %}Danh mục: {{ current_category }}{% else %}Sản phẩm{% endif %}
+    </h1>
+
+    <div class="flex flex-col md:flex-row gap-8">
+        {# Sidebar — Categories #}
+        <aside class="md:w-64 flex-shrink-0">
+            <h3 class="font-semibold mb-3">Danh mục</h3>
+            <ul class="space-y-2">
+                <li>
+                    <a href="/shop" class="{% if not current_category %}text-blue-600 font-medium{% else %}text-gray-600 hover:text-blue-600{% endif %}">
+                        Tất cả
+                    </a>
+                </li>
+                {% for cat in categories %}
+                <li>
+                    <a href="/shop?category={{ cat.slug }}"
+                       class="{% if current_category == cat.slug %}text-blue-600 font-medium{% else %}text-gray-600 hover:text-blue-600{% endif %}">
+                        {{ cat.name }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </aside>
+
+        {# Products Grid #}
+        <div class="flex-1">
+            {# Sort Bar #}
+            <div class="flex justify-between items-center mb-6">
+                <p class="text-gray-500 text-sm">{{ total }} sản phẩm</p>
+                <select onchange="window.location.href=this.value" class="border rounded px-3 py-1.5 text-sm">
+                    <option value="/shop?sort=newest{% if current_category %}&category={{ current_category }}{% endif %}"
+                            {% if current_sort == 'newest' %}selected{% endif %}>Mới nhất</option>
+                    <option value="/shop?sort=price_asc{% if current_category %}&category={{ current_category }}{% endif %}"
+                            {% if current_sort == 'price_asc' %}selected{% endif %}>Giá tăng dần</option>
+                    <option value="/shop?sort=price_desc{% if current_category %}&category={{ current_category }}{% endif %}"
+                            {% if current_sort == 'price_desc' %}selected{% endif %}>Giá giảm dần</option>
+                    <option value="/shop?sort=popular{% if current_category %}&category={{ current_category }}{% endif %}"
+                            {% if current_sort == 'popular' %}selected{% endif %}>Phổ biến nhất</option>
+                </select>
+            </div>
+
+            {% if products %}
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                {% for product in products %}
+                <a href="/product/{{ product.slug }}" class="group">
+                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
+                        {% if product.featured_image %}
+                        <img src="{{ product.featured_image }}" alt="{{ product.name }}"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                             loading="lazy">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-400">No image</div>
+                        {% endif %}
+                        {% if product.sale_price %}
+                        <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">SALE</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="font-medium text-sm group-hover:text-blue-600 transition">{{ product.name }}</h3>
+                    <p class="text-red-600 font-bold mt-1">
+                        {% if product.sale_price %}
+                        <span class="line-through text-gray-400 text-sm mr-1">{{ product.price|format_price }}</span>
+                        {{ product.sale_price|format_price }}
+                        {% else %}
+                        {{ product.price|format_price }}
+                        {% endif %}
+                    </p>
+                    {% if product.stock_status == 'outofstock' %}
+                    <span class="text-xs text-red-500">Hết hàng</span>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+
+            {# Pagination #}
+            {% if total_pages > 1 %}
+            <div class="flex justify-center gap-2 mt-10">
+                {% if page > 1 %}
+                <a href="/shop?page={{ page - 1 }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}"
+                   class="px-3 py-2 border rounded hover:bg-gray-50">←</a>
+                {% endif %}
+                {% for p in range(1, total_pages + 1) %}
+                {% if p == page %}
+                <span class="px-3 py-2 bg-blue-600 text-white rounded">{{ p }}</span>
+                {% elif p <= 3 or p > total_pages - 2 or (p >= page - 1 and p <= page + 1) %}
+                <a href="/shop?page={{ p }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}"
+                   class="px-3 py-2 border rounded hover:bg-gray-50">{{ p }}</a>
+                {% elif p == 4 or p == total_pages - 2 %}
+                <span class="px-3 py-2">...</span>
+                {% endif %}
+                {% endfor %}
+                {% if page < total_pages %}
+                <a href="/shop?page={{ page + 1 }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}"
+                   class="px-3 py-2 border rounded hover:bg-gray-50">→</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <p class="text-gray-500 text-center py-12">Chưa có sản phẩm nào.</p>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+{% include "components/footer.html" %}
+{% endblock %}

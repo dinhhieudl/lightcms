@@ -1,0 +1,15 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+{% include "components/header.html" %}
+
+<main class="max-w-2xl mx-auto px-4 py-20 text-center">
+    <h1 class="text-8xl font-bold text-gray-200 mb-4">404</h1>
+    <p class="text-xl text-gray-600 mb-8">Không tìm thấy trang</p>
+    <a href="/" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+        ← Về trang chủ
+    </a>
+</main>
+
+{% include "components/footer.html" %}
+{% endblock %}

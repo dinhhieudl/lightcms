@@ -1,0 +1,86 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block admin_content %}
+<h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+
+{# Stats Grid #}
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+    <div class="bg-white rounded-lg p-4 border">
+        <p class="text-sm text-gray-500">Bài viết</p>
+        <p class="text-2xl font-bold">{{ stats.posts }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-4 border">
+        <p class="text-sm text-gray-500">Trang</p>
+        <p class="text-2xl font-bold">{{ stats.pages }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-4 border">
+        <p class="text-sm text-gray-500">Sản phẩm</p>
+        <p class="text-2xl font-bold">{{ stats.products }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-4 border">
+        <p class="text-sm text-gray-500">Đơn hàng</p>
+        <p class="text-2xl font-bold">{{ stats.orders }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-4 border">
+        <p class="text-sm text-gray-500">Chờ xử lý</p>
+        <p class="text-2xl font-bold text-orange-600">{{ stats.pending_orders }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-4 border">
+        <p class="text-sm text-gray-500">Danh mục</p>
+        <p class="text-2xl font-bold">{{ stats.categories }}</p>
+    </div>
+</div>
+
+<div class="grid md:grid-cols-2 gap-6">
+    {# Recent Orders #}
+    <div class="bg-white rounded-lg border">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h2 class="font-semibold">Đơn hàng gần đây</h2>
+            <a href="{{ admin_prefix }}/orders" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
+        </div>
+        <div class="divide-y">
+            {% for order in recent_orders %}
+            <a href="{{ admin_prefix }}/orders/{{ order.id }}" class="block p-4 hover:bg-gray-50">
+                <div class="flex justify-between">
+                    <span class="font-medium">#{{ order.order_number }}</span>
+                    <span class="text-sm
+                        {% if order.status.value == 'pending' %}text-orange-600
+                        {% elif order.status.value == 'completed' %}text-green-600
+                        {% else %}text-gray-500{% endif %}">
+                        {{ order.status.value }}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-500">{{ order.customer_name }} · {{ order.total|format_price }}</p>
+            </a>
+            {% else %}
+            <p class="p-4 text-gray-400 text-sm">Chưa có đơn hàng</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Recent Posts #}
+    <div class="bg-white rounded-lg border">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h2 class="font-semibold">Bài viết gần đây</h2>
+            <a href="{{ admin_prefix }}/posts" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
+        </div>
+        <div class="divide-y">
+            {% for post in recent_posts %}
+            <a href="{{ admin_prefix }}/posts/{{ post.id }}/edit" class="block p-4 hover:bg-gray-50">
+                <div class="flex justify-between">
+                    <span class="font-medium">{{ post.title }}</span>
+                    <span class="text-sm
+                        {% if post.status.value == 'published' %}text-green-600
+                        {% else %}text-gray-400{% endif %}">
+                        {{ post.status.value }}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-500">{{ post.created_at|timeago }}</p>
+            </a>
+            {% else %}
+            <p class="p-4 text-gray-400 text-sm">Chưa có bài viết</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Đơn hàng #{{ order.order_number }}</h1>
+    <a href="{{ admin_prefix }}/orders" class="text-blue-600 hover:underline text-sm">← Quay lại</a>
+</div>
+
+<div class="grid md:grid-cols-3 gap-6">
+    <div class="md:col-span-2 space-y-6">
+        {# Items #}
+        <div class="bg-white rounded-lg border">
+            <div class="p-4 border-b font-semibold">Sản phẩm</div>
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50"><tr><th class="px-4 py-2 text-left">Sản phẩm</th><th class="px-4 py-2 text-center">SL</th><th class="px-4 py-2 text-right">Thành tiền</th></tr></thead>
+                <tbody class="divide-y">
+                    {% for item in order.items %}
+                    <tr>
+                        <td class="px-4 py-2">{{ item.product_name }}{% if item.variant_name %} <span class="text-gray-400">({{ item.variant_name }})</span>{% endif %}</td>
+                        <td class="px-4 py-2 text-center">{{ item.quantity }}</td>
+                        <td class="px-4 py-2 text-right">{{ item.subtotal|format_price }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="border-t">
+                    <tr><td colspan="2" class="px-4 py-2 text-right font-semibold">Tổng:</td><td class="px-4 py-2 text-right font-bold text-red-600 text-lg">{{ order.total|format_price }}</td></tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {# Customer Info #}
+        <div class="bg-white rounded-lg border p-4">
+            <h3 class="font-semibold mb-3">👤 Thông tin giao hàng</h3>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <div><span class="text-gray-500">Họ tên:</span> {{ order.customer_name }}</div>
+                <div><span class="text-gray-500">Email:</span> {{ order.customer_email }}</div>
+                <div><span class="text-gray-500">Điện thoại:</span> {{ order.customer_phone }}</div>
+                <div><span class="text-gray-500">Thanh toán:</span> {{ order.payment_method }}</div>
+                <div class="col-span-2"><span class="text-gray-500">Địa chỉ:</span> {{ order.shipping_address }}, {{ order.shipping_district }}, {{ order.shipping_city }}</div>
+                {% if order.customer_note %}
+                <div class="col-span-2"><span class="text-gray-500">Ghi chú:</span> {{ order.customer_note }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Status Update #}
+    <div class="space-y-4">
+        <form method="POST" action="{{ admin_prefix }}/orders/{{ order.id }}/status" class="bg-white rounded-lg border p-4">
+            <h3 class="font-semibold mb-3">📋 Cập nhật trạng thái</h3>
+            <select name="status" class="w-full border rounded px-3 py-2 mb-3">
+                {% for s in ['pending','confirmed','processing','shipped','completed','cancelled','refunded'] %}
+                <option value="{{ s }}" {% if order.status.value == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+            <textarea name="admin_note" rows="3" placeholder="Ghi chú nội bộ..." class="w-full border rounded px-3 py-2 text-sm mb-3">{{ order.admin_note or '' }}</textarea>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700">Cập nhật</button>
+        </form>
+
+        <div class="bg-white rounded-lg border p-4 text-sm">
+            <div class="flex items-center gap-2 mb-2">
+                {% if order.telegram_notified %}✅{% else %}❌{% endif %} Telegram
+            </div>
+            <div class="flex items-center gap-2">
+                {% if order.email_notified %}✅{% else %}❌{% endif %} Email
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg border p-4 text-xs text-gray-500">
+            <p>Tạo: {{ order.created_at }}</p>
+            <p>Cập nhật: {{ order.updated_at }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

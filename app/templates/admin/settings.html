@@ -1,0 +1,36 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block admin_content %}
+<h1 class="text-2xl font-bold mb-6">⚙️ Cài đặt</h1>
+
+<form method="POST" action="{{ admin_prefix }}/settings" class="max-w-2xl space-y-6">
+    <div class="bg-white rounded-lg border p-4">
+        <h3 class="font-semibold mb-4">🌐 Thông tin website</h3>
+        <div class="space-y-4">
+            <div><label class="block text-sm font-medium mb-1">Tên website</label><input type="text" name="site_title" value="{{ options.get('site_title', '') }}" class="w-full border rounded px-3 py-2"></div>
+            <div><label class="block text-sm font-medium mb-1">Mô tả</label><textarea name="site_description" rows="2" class="w-full border rounded px-3 py-2 text-sm">{{ options.get('site_description', '') }}</textarea></div>
+            <div><label class="block text-sm font-medium mb-1">Logo URL</label><input type="text" name="site_logo" value="{{ options.get('site_logo', '') }}" class="w-full border rounded px-3 py-2 text-sm"></div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg border p-4">
+        <h3 class="font-semibold mb-4">💬 Telegram</h3>
+        <div class="space-y-4">
+            <div><label class="block text-sm font-medium mb-1">Bot Token</label><input type="text" name="telegram_bot_token" value="{{ options.get('telegram_bot_token', '') }}" class="w-full border rounded px-3 py-2 text-sm font-mono"></div>
+            <div><label class="block text-sm font-medium mb-1">Chat ID</label><input type="text" name="telegram_chat_id" value="{{ options.get('telegram_chat_id', '') }}" class="w-full border rounded px-3 py-2 text-sm font-mono"></div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg border p-4">
+        <h3 class="font-semibold mb-4">📧 Email (SMTP)</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">Host</label><input type="text" name="smtp_host" value="{{ options.get('smtp_host', '') }}" class="w-full border rounded px-3 py-2 text-sm"></div>
+            <div><label class="block text-sm font-medium mb-1">Port</label><input type="number" name="smtp_port" value="{{ options.get('smtp_port', '587') }}" class="w-full border rounded px-3 py-2 text-sm"></div>
+            <div><label class="block text-sm font-medium mb-1">User</label><input type="text" name="smtp_user" value="{{ options.get('smtp_user', '') }}" class="w-full border rounded px-3 py-2 text-sm"></div>
+            <div><label class="block text-sm font-medium mb-1">Password</label><input type="password" name="smtp_pass" value="{{ options.get('smtp_pass', '') }}" class="w-full border rounded px-3 py-2 text-sm"></div>
+        </div>
+    </div>
+
+    <button type="submit" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700">💾 Lưu cài đặt</button>
+</form>
+{% endblock %}

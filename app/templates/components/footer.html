@@ -1,0 +1,52 @@
+<footer class="bg-gray-900 text-gray-400 mt-16">
+    <div class="max-w-6xl mx-auto px-4 py-12">
+        <div class="grid md:grid-cols-4 gap-8">
+            <div>
+                <h3 class="text-white font-bold text-lg mb-4">{{ site_title }}</h3>
+                <p class="text-sm">{{ site_description }}</p>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-3">Liên kết</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="/shop" class="hover:text-white transition">Sản phẩm</a></li>
+                    <li><a href="/blog" class="hover:text-white transition">Blog</a></li>
+                    <li><a href="/about" class="hover:text-white transition">Giới thiệu</a></li>
+                    <li><a href="/contact" class="hover:text-white transition">Liên hệ</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-3">Hỗ trợ</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="/shipping" class="hover:text-white transition">Chính sách vận chuyển</a></li>
+                    <li><a href="/returns" class="hover:text-white transition">Đổi trả</a></li>
+                    <li><a href="/privacy" class="hover:text-white transition">Chính sách bảo mật</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-3">Theo dõi</h4>
+                <div class="flex gap-3 text-2xl">
+                    <a href="#" title="Facebook">📘</a>
+                    <a href="#" title="Instagram">📷</a>
+                    <a href="#" title="YouTube">📺</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
+            <p>© {{ now.year }} {{ site_title }}. Powered by Z-Core Framework.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+// Cart count badge
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const count = cart.reduce((sum, i) => sum + i.quantity, 0);
+    const badge = document.getElementById('cart-count');
+    if (badge) {
+        badge.textContent = count;
+        badge.classList.toggle('hidden', count === 0);
+    }
+}
+updateCartCount();
+</script>
